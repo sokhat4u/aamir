@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat Bot Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: #e5ddd5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #075e54;
+            padding: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            background: #128c7e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            max-width: 65%;
+            padding: 8px 16px;
+            margin: 8px;
+            border-radius: 8px;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+            overflow-wrap: break-word; /* Add this line */
+            word-wrap: break-word; /* Add this line for better support */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .received {
+            background: white;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+
+        .sent {
+            background: #dcf8c6;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .input-area {
+            background: #f0f0f0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .send-button {
+            background: #128c7e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .send-button:hover {
+            background: #075e54;
+        }
+
+        .messages-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timestamp {
+            font-size: 0.7em;
+            color: #666;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: #999;
+            margin: 8px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <div class="profile-pic">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+        </div>
+        <div>
+            <h2>Survey Bot</h2>
+            <small>Aamir Baloch</small>
+        </div>
+    </div>
+    
+    <div class="chat-container">
+        <div class="messages-wrapper" id="messages">
+            <!-- Messages will be added here -->
+        </div>
+        <div id="typingIndicator" class="typing-indicator" style="display: none;">Typing...</div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" class="message-input" placeholder="Type a message" id="messageInput">
+        <button class="send-button" id="sendButton">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+        </button>
+    </div>
+
+<script>
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+const messagesContainer = document.getElementById('messages');
+const typingIndicator = document.getElementById('typingIndicator');
+
+const botResponses = {
+    "Hello": "Hi Aamir",
+    "Version": "Hack Bot Beta 0.1",
+    "Survey": "Survey ka host name?",
+    "survey.emi-rs.com": "survey.emi-rs.com/end/complete/?scb=1gaQ7R9f48iIY2c*remove*",
+    "Owner": "Aamir Baloch",
+    "Thanks": "Welcome 🤗",
+    "dvj.decipherinc.com": "https://notch.insights.supply/cb?token=b3dd57cf-3b24-4bb1-bd73-3a2f2408e847&RID=6724f028-15a5-ea5e-8849-bf4da3917180**remove**",
+    "Wow": "😳😯😳",
+    "research.potentia-insight.co.uk": "https://notch.insights.supply/cb?token=ecb6b75f-4e65-4afc-a51e-bbf8743cca47&RID=",
+    "eu5se.voxco.com": "https://sample.savanta.com/v2/c/?id=b4f20cb2-7264-4d4a-8034-0b7af127a8ad*romove*",
+    "Thanks": "Welcome Boss 😉.",
+    "Bye": "Goodbye, Aamir! Have a nice day!",
+    "default": [
+        "I'm processing your request...",
+        "That's interesting! Tell me more.",
+        "I understand. Let me assist you with that.",
+        "Is there anything else you'd like to know?",
+        "I'm here to help!",
+        "Could you please provide more details?",
+        "Thank you for your message."
+    ]
+};
+
+function getCurrentTime() {
+    return new Date().toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: 'numeric',
+        hour12: true 
+    });
+}
+
+function addMessage(content, isSent) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+    
+    const messageContent = document.createElement('div');
+    messageContent.textContent = content;
+    
+    const timestamp = document.createElement('div');
+    timestamp.className = 'timestamp';
+    timestamp.textContent = getCurrentTime();
+    
+    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(timestamp);
+    messagesContainer.appendChild(messageDiv);
+    
+    // Auto scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function getResponse(message) {
+    const trimmedMessage = message.trim();
+    if (botResponses[trimmedMessage]) {
+        return botResponses[trimmedMessage];
+    }
+    return botResponses["default"][Math.floor(Math.random() * botResponses["default"].length)];
+}
+
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (message) {
+        // Add user message
+        addMessage(message, true);
+        messageInput.value = '';
+        
+        // Show typing indicator
+        typingIndicator.style.display = 'block';
+        
+        // Simulate bot typing
+        setTimeout(() => {
+            // Hide typing indicator
+            typingIndicator.style.display = 'none';
+            // Add bot response
+            addMessage(getResponse(message), false);
+        }, 1000);
+    }
+}
+
+sendButton.addEventListener('click', sendMessage);
+
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Initial bot greeting
+setTimeout(() => {
+    addMessage("👋 Hi! I'm your WhatsApp assistant. How can I help you today?", false);
+}, 500);
+</script>
+
+</body>
+</html>
