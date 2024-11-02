@@ -23,6 +23,4 @@ def get_link():
 def get_hostnames():
     return jsonify({"hostnames": list(links.keys())})
 
-if __name__ == "__main__":
-    # Start Flask app without ngrok
-    app.run(host="0.0.0.0", port=5000, debug=True)
+# Remove the main block for deployment
