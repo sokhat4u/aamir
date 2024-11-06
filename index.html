@@ -1,3 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat Bot Interface</title>
+    <style>
+        /* Same CSS styles as before */
+        /* Include your CSS here */
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <div class="profile-pic">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+        </div>
+        <div>
+            <h2>Survey Bot</h2>
+            <small>Aamir Baloch</small>
+        </div>
+    </div>
+    
+    <div class="chat-container">
+        <div class="messages-wrapper" id="messages">
+            <!-- Messages will be added here -->
+        </div>
+        <div id="typingIndicator" class="typing-indicator" style="display: none;">Typing...</div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" class="message-input" placeholder="Type a message" id="messageInput">
+        <button class="send-button" id="sendButton">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+        </button>
+    </div>
+
 <script>
 const messageInput = document.getElementById('messageInput');
 const sendButton = document.getElementById('sendButton');
@@ -31,31 +71,28 @@ function addMessage(content, isSent) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-function sendMessage() {
+async function sendMessage() {
     const message = messageInput.value.trim();
     if (message) {
-        addMessage(message, true); // Add user message
+        addMessage(message, true);
         messageInput.value = '';
+
+        typingIndicator.style.display = 'block';
         
-        typingIndicator.style.display = 'block'; // Show typing indicator
-        
-        fetch('/get_response', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: message })
-        })
-        .then(response => response.json())
-        .then(data => {
-            typingIndicator.style.display = 'none'; // Hide typing indicator
-            addMessage(data.response, false); // Add bot response
-        })
-        .catch(error => {
+        try {
+            const response = await fetch('/get-response', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
             typingIndicator.style.display = 'none';
-            addMessage("Error: Could not retrieve response.", false);
-            console.error('Error:', error);
-        });
+            addMessage(data.response, false);
+        } catch (error) {
+            console.error("Error fetching response:", error);
+            typingIndicator.style.display = 'none';
+            addMessage("Error: Could not fetch response.", false);
+        }
     }
 }
 
@@ -67,8 +104,10 @@ messageInput.addEventListener('keypress', (e) => {
     }
 });
 
-// Initial bot greeting
 setTimeout(() => {
     addMessage("👋 Hi! I'm your WhatsApp assistant. How can I help you today?", false);
 }, 500);
 </script>
+
+</body>
+</html>
