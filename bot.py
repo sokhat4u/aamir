@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS  # Import CORS
 import random
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
+# Predefined responses
 bot_responses = {
     "Hello": "Hi Aamir",
     "Version": "Hack Bot Beta 0.1",
@@ -33,8 +36,8 @@ def index():
 
 @app.route('/get-response', methods=['POST'])
 def get_response():
-    user_message = request.json.get("message", "").strip()
-    response = bot_responses.get(user_message, random.choice(default_responses))
+    user_message = request.json.get("message", "").strip()  # Extract message from request
+    response = bot_responses.get(user_message, random.choice(default_responses))  # Get response or random
     return jsonify({"response": response})
 
 if __name__ == '__main__':
