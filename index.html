@@ -163,20 +163,27 @@ async function sendMessage() {
         messageInput.value = '';
 
         typingIndicator.style.display = 'block';
-        
+
         try {
             const response = await fetch('/get-response', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message })
             });
+
+            // Check if response is successful (status code 200)
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
             const data = await response.json();
+            console.log('Response data:', data);  // Debugging line to see the response structure
             typingIndicator.style.display = 'none';
             addMessage(data.response, false);
         } catch (error) {
             console.error("Error fetching response:", error);
             typingIndicator.style.display = 'none';
-            addMessage("Error: Could not fetch response.", false);
+            addMessage("Error: Could not fetch response. Please try again later.", false);
         }
     }
 }
@@ -189,6 +196,7 @@ messageInput.addEventListener('keypress', (e) => {
     }
 });
 
+// Display an initial message after loading
 setTimeout(() => {
     addMessage("👋 Hi! I'm your WhatsApp assistant. How can I help you today?", false);
 }, 500);
